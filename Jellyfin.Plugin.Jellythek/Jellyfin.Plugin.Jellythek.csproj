@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>Jellyfin.Plugin.Jellythek</AssemblyName>
+    <RootNamespace>Jellyfin.Plugin.Jellythek</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <Description>Importiert Inhalte aus MediathekViewWeb RSS-Feeds als .strm-Dateien</Description>
+    <Company>Jellythek</Company>
+    <Authors>Jellythek</Authors>
+    <Copyright>Copyright © 2025</Copyright>
+    <PackageProjectUrl>https://github.com/cibkp89/jellyfin-plugin-jellythek</PackageProjectUrl>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Controller" Version="10.11.0" />
+    <PackageReference Include="Jellyfin.Model" Version="10.11.0" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Configuration\configPage.html" />
+    <EmbeddedResource Include="Configuration\configPage.html" />
+  </ItemGroup>
+</Project>

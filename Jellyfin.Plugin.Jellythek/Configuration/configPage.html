@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Jellythek</title>
+    <style>
+        .tabContent {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .feedItem {
+            border: 1px solid #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #1a1a1a;
+        }
+        .feedItem h4 {
+            margin: 0 0 10px 0;
+            color: #00a4dc;
+        }
+        .feedForm {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px dashed #666;
+            border-radius: 5px;
+            background: #222;
+        }
+        .feedForm.active {
+            display: block;
+        }
+        .formRow {
+            margin: 15px 0;
+        }
+        .formRow label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .excludeTag {
+            display: inline-block;
+            background: #444;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .excludeTag button {
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="JellythekConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" 
+         data-require="emby-input,emby-button,emby-select,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="JellythekConfigForm">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">Jellythek Plugin</h2>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div data-role="controlgroup" data-type="horizontal" class="localnav" style="margin-bottom: 2em;">
+                        <a class="emby-button ui-btn-active" data-index="0" href="#" data-role="button">Allgemein</a>
+                        <a class="emby-button" data-index="1" href="#" data-role="button">Neuer Feed</a>
+                        <a class="emby-button" data-index="2" href="#" data-role="button">Gespeicherte Feeds</a>
+                    </div>
+
+                    <!-- Tab 1: Allgemein -->
+                    <div class="tabContent" data-index="0">
+                        <div class="verticalSection">
+                            <h3>Grundeinstellungen</h3>
+                            
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" id="syncEnabled" />
+                                    <span>Synchronisation aktiviert</span>
+                                </label>
+                                <div class="fieldDescription">
+                                    Master-Schalter für die Synchronisation. Wenn deaktiviert, wird kein Sync durchgeführt, 
+                                    auch nicht bei manuellem Start oder durch die Aufgabenplanung.<br>
+                                    <strong>Hinweis:</strong> Den Zeitplan für automatische Syncs kannst du unter 
+                                    "Dashboard → Geplante Aufgaben → Jellythek Synchronisation" festlegen.
+                                </div>
+                            </div>
+
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="outputPath">Speicherpfad</label>
+                                <input is="emby-input" type="text" id="outputPath" />
+                                <div class="fieldDescription">
+                                    Absoluter Pfad zum Speichern der .strm-Dateien (z.B. /config/data/jellythek)<br>
+                                    Die Unterordner "Filme" und "Serien" werden automatisch erstellt.
+                                </div>
+                            </div>
+
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="proxyUrlDe">URL Präfix DE</label>
+                                <input is="emby-input" type="text" id="proxyUrlDe" />
+                                <div class="fieldDescription">
+                                    URL für den deutschen Proxy 
+                                </div>
+                            </div>
+
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="proxyUrlAt">URL Präfix AT</label>
+                                <input is="emby-input" type="text" id="proxyUrlAt" />
+                                <div class="fieldDescription">
+                                    URL für den österreichischen Proxy 
+                                </div>
+                            </div>
+
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="proxyUrlCh">URL Präfix CH</label>
+                                <input is="emby-input" type="text" id="proxyUrlCh" />
+                                <div class="fieldDescription">
+                                    URL für den schweizer Proxy 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Neuer Feed -->
+                    <div class="tabContent" data-index="1" style="display: none;">
+                        <div class="verticalSection">
+                            <h3>Neuen Feed erstellen</h3>
+                            <p>Füge einen neuen RSS-Feed hinzu. Vergiss nicht, die Konfiguration am Ende der Seite zu speichern!</p>
+                            <div class="formRow">
+                                <label for="newName">Name *</label>
+                                <input is="emby-input" type="text" id="newName" placeholder="z.B. Sketch-History" required />
+                            </div>
+                            
+                            <div class="formRow">
+                                <label for="newFilter">Filter (Jellythek Syntax) *</label>
+                                <input is="emby-input" type="text" id="newFilter" placeholder="z.B. !zdf sketch-history >20" required />
+                            </div>
+
+                            <div class="formRow">
+                                <label for="newType">Typ</label>
+                                <select is="emby-select" id="newType">
+                                    <option value="serie">Serie</option>
+                                    <option value="film">Film</option>
+                                </select>
+                            </div>
+
+                            <div class="formRow">
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" id="newStaffel" />
+                                    <span>Staffel/Episode extrahieren (nur bei Serien)</span>
+                                </label>
+                            </div>
+
+                            <div class="formRow">
+                                <label for="newMaxEntries">Max. Einträge (leer = alle)</label>
+                                <input is="emby-input" type="number" id="newMaxEntries" placeholder="z.B. 3" min="1" />
+                            </div>
+
+                            <div class="formRow">
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" id="newCleanFolder" />
+                                    <span>Ordner vor Sync leeren (nur bei Serien)</span>
+                                </label>
+                                <div class="fieldDescription" style="margin-top: 5px; font-size: 90%; color: #999;">
+                                    Löscht alle Episoden vor dem Sync und erstellt sie neu. Sinnvoll in Kombination mit "Max. Einträge".<br>
+                                    <strong>Hinweis:</strong> Diese Option funktioniert nur bei Serien. Bei Filmen wird sie ignoriert, 
+                                    da alle Filme im gemeinsamen /Filme/ Ordner liegen und nicht gelöscht werden sollten.
+                                </div>
+                            </div>
+
+                            <div class="formRow">
+                                <label for="newProxy">Proxy</label>
+                                <select is="emby-select" id="newProxy">
+                                    <option value="">Kein Proxy</option>
+                                    <option value="DE">DE Proxy</option>
+                                    <option value="AT">AT Proxy</option>
+                                    <option value="CH">CH Proxy</option>
+                                </select>
+                            </div>
+
+                            <div class="formRow">
+                                <label for="newExcludeInput">Ausschluss-Begriffe (Enter zum Hinzufügen)</label>
+                                <input is="emby-input" type="text" id="newExcludeInput" placeholder="z.B. Audiodeskription" />
+                                <div id="newExcludeList" style="margin-top: 10px;"></div>
+                            </div>
+
+                            <div style="margin-top: 20px;">
+                                <button type="button" is="emby-button" class="raised button-submit" onclick="saveNewFeed()">
+                                    <span>💾 Feed speichern</span>
+                                </button>
+                                <button type="button" is="emby-button" class="raised" onclick="cancelNewFeed()">
+                                    <span>❌ Abbrechen</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Gespeicherte Feeds -->
+                    <div class="tabContent" data-index="2" style="display: none;">
+                        <div class="verticalSection">
+                            <h3>Konfigurierte Feeds</h3>
+                            <div id="feedsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div style="margin-top: 2em;">
+                        <button is="emby-button" type="submit" class="raised button-submit block">
+                            <span>💾 Konfiguration speichern</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var JellythekConfig = {
+                pluginUniqueId: "a4df60f5-8c0d-4b4a-9c5e-7f6b8d9e0f1a",
+                currentConfig: null,
+                newFeedExcludeList: []
+            };
+
+            // Tab switching
+            function switchTab(index) {
+                var tabContents = document.querySelectorAll('.tabContent');
+                tabContents.forEach(function(content) {
+                    content.style.display = 'none';
+                });
+
+                var tabButtons = document.querySelectorAll('.localnav .emby-button');
+                tabButtons.forEach(function(button) {
+                    button.classList.remove('ui-btn-active');
+                });
+
+                var selectedContent = document.querySelector('.tabContent[data-index="' + index + '"]');
+                if (selectedContent) {
+                    selectedContent.style.display = 'block';
+                }
+
+                var selectedButton = document.querySelector('.localnav .emby-button[data-index="' + index + '"]');
+                if (selectedButton) {
+                    selectedButton.classList.add('ui-btn-active');
+                }
+            }
+
+            // Initialize tabs
+            function initializeTabs() {
+                var tabButtons = document.querySelectorAll('.localnav .emby-button');
+                tabButtons.forEach(function(button) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        var index = parseInt(this.getAttribute('data-index'));
+                        switchTab(index);
+                        
+                        // Reload feeds list when switching to tab 3
+                        if (index === 2) {
+                            loadFeedsList();
+                        }
+                    });
+                });
+            }
+
+            // Load configuration
+            function loadConfig() {
+                Dashboard.showLoadingMsg();
+                
+                ApiClient.getPluginConfiguration(JellythekConfig.pluginUniqueId).then(function (config) {
+                    // Sicherstellen, dass die Config-Struktur existiert
+                    if (!config) {
+                        config = {
+                            SyncEnabled: true,
+                            OutputPath: '/config/data/jellythek',
+                            ProxyUrlDe: '',
+                            ProxyUrlAt: '',
+                            ProxyUrlCh: '',
+                            Feeds: []
+                        };
+                    }
+                    
+                    // Feeds-Array initialisieren falls nicht vorhanden
+                    if (!config.Feeds) {
+                        config.Feeds = [];
+                    }
+                    
+                    JellythekConfig.currentConfig = config;
+                    
+                    document.getElementById('syncEnabled').checked = config.SyncEnabled || false;
+                    document.getElementById('outputPath').value = config.OutputPath || '/config/data/jellythek';
+                    document.getElementById('proxyUrlDe').value = config.ProxyUrlDe || '';
+                    document.getElementById('proxyUrlAt').value = config.ProxyUrlAt || '';
+                    document.getElementById('proxyUrlCh').value = config.ProxyUrlCh || '';
+                    
+                    loadFeedsList();
+                    Dashboard.hideLoadingMsg();
+                }).catch(function(error) {
+                    console.error('Error loading config:', error);
+                    Dashboard.hideLoadingMsg();
+                    Dashboard.alert('Fehler beim Laden der Konfiguration. Bitte Seite neu laden.');
+                });
+            }
+
+            // Load feeds list (Tab 2)
+            function loadFeedsList() {
+                var feedsList = document.getElementById('feedsList');
+                if (!JellythekConfig.currentConfig || !JellythekConfig.currentConfig.Feeds) {
+                    feedsList.innerHTML = '<p>Keine Feeds konfiguriert.</p>';
+                    return;
+                }
+
+                var feeds = JellythekConfig.currentConfig.Feeds;
+                if (feeds.length === 0) {
+                    feedsList.innerHTML = '<p>Keine Feeds konfiguriert. Fügen Sie einen Feed im Tab "Allgemein" hinzu.</p>';
+                    return;
+                }
+
+                var html = '';
+                feeds.forEach(function(feed, index) {
+                    html += '<div class="feedItem">';
+                    html += '<h4>' + escapeHtml(feed.Name) + '</h4>';
+                    html += '<div><strong>Filter:</strong> ' + escapeHtml(feed.Filter) + '</div>';
+                    html += '<div><strong>Typ:</strong> ' + feed.Type;
+                    if (feed.Staffel) html += ' (mit Staffel/Episode)';
+                    html += '</div>';
+                    if (feed.MaxEntries) {
+                        html += '<div><strong>Max. Einträge:</strong> ' + feed.MaxEntries + '</div>';
+                    }
+                    if (feed.CleanFolder) {
+                        if (feed.Type === 'serie') {
+                            html += '<div><strong>Ordner leeren:</strong> Ja</div>';
+                        } else {
+                            html += '<div><strong>Ordner leeren:</strong> Ja (wird bei Filmen ignoriert)</div>';
+                        }
+                    }
+                    if (feed.Proxy) {
+                        html += '<div><strong>Proxy:</strong> ' + feed.Proxy + '</div>';
+                    }
+                    if (feed.Exclude && feed.Exclude.length > 0) {
+                        html += '<div><strong>Ausschlüsse:</strong> ' + feed.Exclude.join(', ') + '</div>';
+                    }
+                    html += '<div style="margin-top: 10px;">';
+                    html += '<button type="button" is="emby-button" class="raised" onclick="deleteFeed(' + index + ')">🗑️ Löschen</button>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+
+                feedsList.innerHTML = html;
+            }
+
+            // Toggle new feed form
+            // (Nicht mehr benötigt, da das Formular jetzt immer sichtbar ist auf Tab 2)
+
+            // Reset new feed form
+            function resetNewFeedForm() {
+                document.getElementById('newName').value = '';
+                document.getElementById('newFilter').value = '';
+                document.getElementById('newType').value = 'serie';
+                document.getElementById('newStaffel').checked = false;
+                document.getElementById('newMaxEntries').value = '';
+                document.getElementById('newCleanFolder').checked = false;
+                document.getElementById('newProxy').value = '';
+                document.getElementById('newExcludeInput').value = '';
+                JellythekConfig.newFeedExcludeList = [];
+                updateExcludeList();
+            }
+
+            // Cancel new feed
+            function cancelNewFeed() {
+                resetNewFeedForm();
+                switchTab(2); // Wechsle zu "Gespeicherte Feeds"
+            }
+
+            // Exclude list management
+            document.getElementById('newExcludeInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    var value = this.value.trim();
+                    if (value && JellythekConfig.newFeedExcludeList.indexOf(value) === -1) {
+                        JellythekConfig.newFeedExcludeList.push(value);
+                        this.value = '';
+                        updateExcludeList();
+                    }
+                }
+            });
+
+            function updateExcludeList() {
+                var container = document.getElementById('newExcludeList');
+                var html = '';
+                JellythekConfig.newFeedExcludeList.forEach(function(term, index) {
+                    html += '<span class="excludeTag">' + escapeHtml(term);
+                    html += '<button type="button" onclick="removeExclude(' + index + ')">×</button>';
+                    html += '</span>';
+                });
+                container.innerHTML = html;
+            }
+
+            function removeExclude(index) {
+                JellythekConfig.newFeedExcludeList.splice(index, 1);
+                updateExcludeList();
+            }
+
+            // Save new feed
+            function saveNewFeed() {
+                var name = document.getElementById('newName').value.trim();
+                var filter = document.getElementById('newFilter').value.trim();
+
+                if (!name || !filter) {
+                    Dashboard.alert('Bitte Name und Filter angeben.');
+                    return;
+                }
+
+                var newFeed = {
+                    Name: name,
+                    Filter: filter,
+                    Type: document.getElementById('newType').value,
+                    Staffel: document.getElementById('newStaffel').checked,
+                    MaxEntries: parseInt(document.getElementById('newMaxEntries').value) || null,
+                    CleanFolder: document.getElementById('newCleanFolder').checked,
+                    Proxy: document.getElementById('newProxy').value || null,
+                    Exclude: JellythekConfig.newFeedExcludeList.slice()
+                };
+
+                if (!JellythekConfig.currentConfig.Feeds) {
+                    JellythekConfig.currentConfig.Feeds = [];
+                }
+                JellythekConfig.currentConfig.Feeds.push(newFeed);
+
+                resetNewFeedForm();
+                loadFeedsList();
+                switchTab(2); // Wechsle zu "Gespeicherte Feeds"
+                
+                Dashboard.alert('Feed hinzugefügt! Bitte speichere die Konfiguration am Ende der Seite.');
+            }
+
+            // Delete feed
+            function deleteFeed(index) {
+                var feed = JellythekConfig.currentConfig.Feeds[index];
+                if (confirm('Feed "' + feed.Name + '" wirklich löschen?')) {
+                    JellythekConfig.currentConfig.Feeds.splice(index, 1);
+                    loadFeedsList();
+                }
+            }
+
+            // Save configuration
+            document.getElementById('JellythekConfigForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+
+                JellythekConfig.currentConfig.SyncEnabled = document.getElementById('syncEnabled').checked;
+                JellythekConfig.currentConfig.OutputPath = document.getElementById('outputPath').value || '/config/data/jellythek';
+                JellythekConfig.currentConfig.ProxyUrlDe = document.getElementById('proxyUrlDe').value;
+                JellythekConfig.currentConfig.ProxyUrlAt = document.getElementById('proxyUrlAt').value;
+                JellythekConfig.currentConfig.ProxyUrlCh = document.getElementById('proxyUrlCh').value;
+
+                ApiClient.updatePluginConfiguration(JellythekConfig.pluginUniqueId, JellythekConfig.currentConfig).then(function () {
+                    Dashboard.processPluginConfigurationUpdateResult();
+                }).catch(function(error) {
+                    console.error('Error saving config:', error);
+                    Dashboard.hideLoadingMsg();
+                    Dashboard.alert('Fehler beim Speichern: ' + error.message);
+                });
+
+                return false;
+            });
+
+            // Helper function
+            function escapeHtml(text) {
+                var map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+
+            // Page initialization
+            document.getElementById('JellythekConfigPage').addEventListener('pageshow', function () {
+                initializeTabs();
+                loadConfig();
+            });
+        </script>
+    </div>
+</body>
+</html>
